@@ -4,11 +4,13 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"    
+    "start": "node app.js"
   },
   "author": "teopinillo",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.3"
+    "@mailchimp/mailchimp_marketing": "^3.0.74",
+    "express": "^4.17.3",
+    "request": "^2.88.2"
   }
 }

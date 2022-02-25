@@ -123,7 +123,7 @@ app.post('/subscribe', (req, res)=>{
 });
   
 app.listen( process.env.PORT  || 4000, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`Example app listening on port 4000`)
 })
 
 
