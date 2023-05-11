@@ -1,5 +1,5 @@
 
-const diffApi = ["26-us14","ee8013c3c5","ee9013c3c5","trh678dr54","a96b97b57d","b05396g32b","s6h3gch87d","47gt2jh5d0","8f450df2bd","786dht56wy"];
+//const diffApi = ["26-us14","ee8013c3c5","ee9013c3c5","trh678dr54","a96b97b57d","b05396g32b","s6h3gch87d","47gt2jh5d0","8f450df2bd","786dht56wy"];
 let api = "";
 let lastSeg = "";
 let screen = "";

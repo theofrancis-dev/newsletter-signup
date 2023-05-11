@@ -7,7 +7,7 @@ const path = require ('path');
 const app = express();
 app.use(express.static( path.join(__dirname, "public")));
 
-const https = require('https');
+//const https = require('https');
 const bodyParser = require("body-parser");
 //const request = require ("request");
 const mailchimpClient = require("@mailchimp/mailchimp_marketing");
@@ -18,16 +18,23 @@ app.use(bodyParser.json());
 
 //=============
 const AUDIENCE_ID = "f592e75a6f";
-
+const chimpApiKey = process.env.CHIMPMAIL_API_KEY;
 
 app.get('/', (req, res) => {
-    console.log('mailchimp api: ', process.env.CHIMPMAIL_API_KEY);
-        res.sendFile(__dirname + '/public/pinpad.html');
+
+    console.log('mailchimp api: ', chimpApiKey);
+    mailchimpClient.setConfig({
+        apiKey: chimpApiKey,
+        server: "us14"
+    });
+
+    if ( mailchimpPing (res)){
+        res.redirect("/subscribe");
+    }
 });
 
 async function mailchimpPing (response) {
     try {
-        //console.log("try...");
         const pingRes = await mailchimpClient.ping.get();  
         console.log("Ping Response: " + JSON.stringify(pingRes) );
         console.log("health status: " + pingRes.health_status );
@@ -51,27 +58,8 @@ async function getAllLists(){
     return allList;
 }
 
-function chkApikey ( apiKey ) {
-    console.log("chk api key: " + apiKey );
-    mailchimpClient.setConfig({
-        apiKey: apiKey,
-        server: "us14"
-    });
-    return mailchimpPing();
-}
-
 app.get ('/subscribe/', (request, response) => {
     response.sendFile(__dirname + '/subscribe.html');
-});
-
-app.get('/chkapi/:api', (request, response) => {    
-    MAILCHIMP_APIKEY = request.params.api;
-    if (chkApikey (MAILCHIMP_APIKEY)) {          
-        response.redirect("/subscribe");
-    }else {
-        MAILCHIMP_APIKEY="";
-        response.send("invalid key");
-    }
 });
 
 app.post('/subscribe', (req, res)=>{   
@@ -126,7 +114,7 @@ app.post('/subscribe', (req, res)=>{
 });
   
 app.listen( process.env.PORT  || 4000, () => {
-  console.log(`Example app listening on port 4000`)
+  console.log(`app listening on port 4000`)
 })
 
 
