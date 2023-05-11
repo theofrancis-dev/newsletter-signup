@@ -35,7 +35,8 @@ async function mailchimpPing (response) {
            return false;
         }
     } catch (e) {
-        console.log("catch..." + e.message);   
+        res.sendFile(__dirname + '/');    
+        console.log("Error..." + e.message);   
         return false;     
     } finally {
         //console.log ('finally');
