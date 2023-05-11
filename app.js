@@ -1,6 +1,7 @@
 //jshint esversion: 6
 
 //$ npm install mailchimp-api-v3
+require('dotenv').config({ path: './secret.env' });
 const express = require('express');
 const path = require ('path');
 const app = express();
@@ -8,9 +9,9 @@ app.use(express.static( path.join(__dirname, "public")));
 
 const https = require('https');
 const bodyParser = require("body-parser");
-const request = require ("request");
+//const request = require ("request");
 const mailchimpClient = require("@mailchimp/mailchimp_marketing");
-const { response } = require('express');
+//const { response } = require('express');
 
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
@@ -20,6 +21,7 @@ const AUDIENCE_ID = "f592e75a6f";
 
 
 app.get('/', (req, res) => {
+    console.log('mailchimp api: ', process.env.CHIMPMAIL_API_KEY);
         res.sendFile(__dirname + '/public/pinpad.html');
 });
 
