@@ -1,8 +1,5 @@
-appsecrets.txt
 /node_modules
 npm-debug.log
-/.env
 .DS_Store
-.env
-secret.env
+**/secret.env
 
