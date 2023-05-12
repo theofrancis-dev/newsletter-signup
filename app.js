@@ -1,7 +1,8 @@
 //jshint esversion: 6
 
 //$ npm install mailchimp-api-v3
-require('dotenv').config({ path: './secret.env' });
+//require('dotenv').config({ path: './secret.env' });
+require('dotenv').config();
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const session = requiere('express-session');
