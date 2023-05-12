@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
     }
 });
 
-async function mailchimpPing (response) {
+async function mailchimpPing (res) {
     try {
         const pingRes = await mailchimpClient.ping.get();  
         console.log("Ping Response: " + JSON.stringify(pingRes) );
@@ -84,7 +84,7 @@ app.post('/subscribe', (req, res)=>{
     };
     
     mailchimpClient.setConfig({
-        apiKey: MAILCHIMP_APIKEY,
+        apiKey: chimpApiKey,
         server: "us14"
     });
    
@@ -94,7 +94,7 @@ app.post('/subscribe', (req, res)=>{
             //console.log("mailchimp response:" + chimpResponse.id);
             //console.log ("add member response: " + JSON.stringify(chimpResponse));
             if (chimpResponse.id){
-                //console.log ("added member: "+ chimpResponse.id);
+                 console.log ("added member: "+ chimpResponse.id);
                 return true;
             } else {
                 return false;
