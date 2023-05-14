@@ -1,42 +1,59 @@
-//jshint esversion: 6
-
-//$ npm install mailchimp-api-v3
-//require('dotenv').config({ path: './secret.env' });
 require('dotenv').config();
-const express = require('express');
+//import express from 'express';
+//import { engine } from 'express-handlebars';
+
+const express = require ('express');
+const { engine } = require ('express-handlebars');
 const cookieParser = require('cookie-parser');
-const session = requiere('express-session');
+const session = require('express-session');
 const bodyParser = require("body-parser");
 const path = require ('path');
-const app = express();
+//const mailchimpClient = require("@mailchimp/mailchimp_marketing");
 //const https = require('https');
 //const request = require ("request");
 //const { response } = require('express');
+const app = express();
 
 //middlewares
 app.use(express.static( path.join(__dirname, "public")));
-const mailchimpClient = require("@mailchimp/mailchimp_marketing");
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use(cookieParser('secret'));
-app.use(session({cookie:{maxAge:null}}));
+app.use(session(
+    {
+        secret: '<session_secret',
+        resave: true,
+        saveUninitialized: true,
+        cookie:{maxAge:null}
+    }));
+
+app.engine('handlebars', engine () );
+app.set ('view engine','handlebars');
+app.set('views','./views');
 
 //=============
 const AUDIENCE_ID = process.env.AUDIENCE_ID;
 const chimpApiKey = process.env.CHIMPMAIL_API_KEY;
 
 app.get('/', (req, res) => {
+    //console.log('mailchimp api: ', chimpApiKey);
+    //mailchimpClient.setConfig({
+    //    apiKey: chimpApiKey,
+    //    server: "us14"
+    //});
 
-    console.log('mailchimp api: ', chimpApiKey);
-    mailchimpClient.setConfig({
-        apiKey: chimpApiKey,
-        server: "us14"
-    });
-
-    if ( mailchimpPing (res)){
-        res.redirect("/subscribe");
-    }
+    /*if ( mailchimpPing (res)){
+        res.render('home');
+    }else{
+        res.message.
+        res.redirect("/");
+    }*/
+    res.render('home');
 });
+
+app.get('/login', (req,res) => {
+    res.render('login');
+})
 
 async function mailchimpPing (res) {
     try {
@@ -64,7 +81,7 @@ async function getAllLists(){
 }
 
 app.get ('/subscribe/', (request, response) => {
-    response.sendFile(__dirname + '/subscribe.html');
+    response.sendFile(__dirname + '/');
 });
 
 app.post('/subscribe', (req, res)=>{   
@@ -111,7 +128,7 @@ app.post('/subscribe', (req, res)=>{
       };
     
     if (addMember()) {
-        res.sendFile(__dirname + '/public/success.html');       
+        res.sendFile(__dirname + '/');       
     } else{
         res.send("we run into problem");
     }
