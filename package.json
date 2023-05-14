@@ -10,11 +10,13 @@
   "license": "ISC",
   "dependencies": {
     "@mailchimp/mailchimp_marketing": "^3.0.74",
+    "connect-flash": "^0.1.1",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.3",
     "express": "^4.17.3",
     "express-handlebars": "^7.0.7",
     "express-session": "^1.17.3",
+    "express-toastr": "^2.0.2",
     "express3-handlebars": "^0.5.2",
     "formidable": "^2.1.1",
     "handlebars": "^4.7.7",

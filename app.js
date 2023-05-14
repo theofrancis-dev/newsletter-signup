@@ -4,6 +4,9 @@ require('dotenv').config();
 
 const express = require ('express');
 const { engine } = require ('express-handlebars');
+
+const flash = require('connect-flash'); //used by toa
+const toastr = require ('express-toastr');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const bodyParser = require("body-parser");
@@ -21,15 +24,25 @@ app.use(bodyParser.json());
 app.use(cookieParser('secret'));
 app.use(session(
     {
-        secret: '<session_secret',
+        secret: 'secret',
         resave: true,
         saveUninitialized: true,
-        cookie:{maxAge:null}
-    }));
+        cookie:{maxAge:null},
 
+    }));
+    
+app.use(flash());
+app.use(toastr());
 app.engine('handlebars', engine () );
 app.set ('view engine','handlebars');
 app.set('views','./views');
+
+//used by toastr
+app.use( (req, res, next) => 
+    {
+        res.locals.toastr = req.toastr.render()
+        next()
+    });
 
 //=============
 const AUDIENCE_ID = process.env.AUDIENCE_ID;
@@ -53,7 +66,14 @@ app.get('/', (req, res) => {
 
 app.get('/login', (req,res) => {
     res.render('login');
+    
 })
+
+app.post('/login', (req,res) => {
+    console.log ('login post.')
+    req.toastr.error('un error con toastr');
+    res.render('login',{req:req});
+});
 
 async function mailchimpPing (res) {
     try {
