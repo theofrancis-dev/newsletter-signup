@@ -51,7 +51,7 @@ const { urlencoded } = require("express");
           console.log(`publishedAt: ${publish_time}`);
           console.log(`content: ${news_content}`);
           
-          result=result.concat('<div class="card" style="max-width: 400px;">')
+          result=result.concat('<div class="col mb-4">','<div class="card" style="max-width: 400px;">')
           result=result.concat('<img src="',image_url, '"class="card-img-top" alt="News Image">');
           result=result.concat ('<div class="card-body">',  
             '<h5 class="card-title">',news_title,'</h5>',

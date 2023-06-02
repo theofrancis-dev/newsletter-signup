@@ -178,8 +178,7 @@ app.post("/subscribe", (request, response) => {
         country: country,
       });
   
-      // Handle successful response
-      console.log(newsResponse);
+      // Handle successful response    
       /*
         {
           status: "ok",
