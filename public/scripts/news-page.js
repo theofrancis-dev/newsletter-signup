@@ -29,7 +29,7 @@ const { urlencoded } = require("express");
         //handle the JSON data
         //console.log(data);    
           
-        let result = "<h1>RESULT:</h1>";  
+        let result = "";  
         const {status, totalResults, articles} = data; 
         for (var i=0; i < articles.length; i++) {
           const source = articles[i].source;
@@ -58,10 +58,10 @@ const { urlencoded } = require("express");
             '<p class="card-text">',news_content,'</p></div>',
             '<div class="card-footer">',
             '<small class="text-muted">Source: ', news_source, '</small><br>',
-            '<small class="text-muted">Published: ', publish_time,'</small></div></div>');
+            '<small class="text-muted">Published: ', publish_time,'</small></div></div></div>');
        }
        const news_container = document.getElementById('news-container');
-       console.log(news_container);
+       //console.log(news_container);
        news_container.innerHTML = result;
       })
         .catch(error => {
