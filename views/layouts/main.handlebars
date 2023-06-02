@@ -26,16 +26,25 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.3.0/mdb.min.css"
         rel="stylesheet"
         />
-        <meta name="theme-color" content="#7952b3">  
-
-        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.2/css/toastr.min.css">
-        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.2/js/toastr.min.js"></script>
+        <meta name="theme-color" content="#7952b3">         
     </head>
   
     <body>
         <main>
-            {{{toastr}}}
+            <!--v1 5/28/2023 -->
+            {{#if message}}
+                <div style="text: align:center" class="alert alert-{{message.type}}">
+                <button type="button" name="close" data-dismiss="alert">&times;</button>
+                <strong>{{message.intro}}</strong> {{message.message}}
+                </div>
+            {{/if}}
+
+            {{#if messages.error}}
+                <div class="alert alert-danger">
+                    {{messages.error}}
+                </div>
+            {{/if}}
+                     
             {{{body}}}
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>

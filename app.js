@@ -1,165 +1,233 @@
-require('dotenv').config();
-//import express from 'express';
-//import { engine } from 'express-handlebars';
-
-const express = require ('express');
-const { engine } = require ('express-handlebars');
-
-const flash = require('connect-flash'); //used by toa
-const toastr = require ('express-toastr');
-const cookieParser = require('cookie-parser');
-const session = require('express-session');
+require("dotenv").config();
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
 const bodyParser = require("body-parser");
-const path = require ('path');
+const { engine } = require("express-handlebars");
+const flash = require("express-flash");
+const path = require("path");
+const NewsAPI = require('newsapi');
+const newsapi = new NewsAPI(process.env.NEWS_API_KEY);
+
+const app = express();
+
 //const mailchimpClient = require("@mailchimp/mailchimp_marketing");
 //const https = require('https');
 //const request = require ("request");
 //const { response } = require('express');
-const app = express();
 
 //middlewares
-app.use(express.static( path.join(__dirname, "public")));
-app.use(bodyParser.urlencoded({extended:true}));
+app.use(express.static(path.join(__dirname, "public")));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(cookieParser('secret'));
-app.use(session(
-    {
-        secret: 'secret',
-        resave: true,
-        saveUninitialized: true,
-        cookie:{maxAge:null},
+app.use(cookieParser("secret"));
+app.use(
+  session({
+    secret: "secret",
+    resave: true,
+    saveUninitialized: true,
+    cookie: { maxAge: null },
+  })
+);
 
-    }));
-    
+//flash message middleware
+//app.use ((req,res,next)=>{
+//    res.locals.message = req.session.message
+//every time we reload this session
+//    delete req.session.message
+//    next()
+//})
 app.use(flash());
-app.use(toastr());
-app.engine('handlebars', engine () );
-app.set ('view engine','handlebars');
-app.set('views','./views');
+app.engine("handlebars", engine());
+app.set("view engine", "handlebars");
+app.set("views", "./views");
 
-//used by toastr
-app.use( (req, res, next) => 
-    {
-        res.locals.toastr = req.toastr.render()
-        next()
-    });
+//================DATABASE CONNECTION (POSTGRESQL)===============================
 
-//=============
+const { Pool } = require("pg");
+
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+});
+
+pool.on("error", (err, client) => {
+  console.error("Error:", err);
+});
+
+function openConnection() {
+  console.log("opening connection to db");
+  pool.query("SELECT NOW()", (err, res) => {
+    console.log(err, res);
+  });
+}
+//================================================================================
+var categories = require('./categories.js');
+var countryData = require('./countries.js');
+var languageData = require('./languages.js');
+const countries = countryData.getCountriesObject();
+const languages = languageData.getLanguagesObject();
+
 const AUDIENCE_ID = process.env.AUDIENCE_ID;
-const chimpApiKey = process.env.CHIMPMAIL_API_KEY;
 
-app.get('/', (req, res) => {
-    //console.log('mailchimp api: ', chimpApiKey);
-    //mailchimpClient.setConfig({
-    //    apiKey: chimpApiKey,
-    //    server: "us14"
-    //});
 
-    /*if ( mailchimpPing (res)){
-        res.render('home');
-    }else{
-        res.message.
-        res.redirect("/");
-    }*/
-    res.render('home');
+app.get("/", (req, res) => {
+  res.render("login");
 });
 
-app.get('/login', (req,res) => {
-    res.render('login');
-    
-})
-
-app.post('/login', (req,res) => {
-    console.log ('login post.')
-    req.toastr.error('un error con toastr');
-    res.render('login',{req:req});
+app.get("/login", (req, res) => {
+  res.render("login");
 });
 
-async function mailchimpPing (res) {
-    try {
-        const pingRes = await mailchimpClient.ping.get();  
-        console.log("Ping Response: " + JSON.stringify(pingRes) );
-        console.log("health status: " + pingRes.health_status );
-        if (pingRes.health_status === "Everything's Chimpy!") {            
-            return true;
-        } else {
-           return false;
-        }
-    } catch (e) {
-        res.sendFile(__dirname + '/');    
-        console.log("Error..." + e.message);   
-        return false;     
-    } finally {
-        //console.log ('finally');
+app.post("/login", (req, res) => {});
+
+app.get("/subscribe", (request, response) => {
+  response.render("subscribe");
+});
+
+/*
+app.post("/subscribe", (request, response) => {
+  const { email, password } = request.body;
+  const query_findByEmail = `SELECT EXISTS (SELECT 1 FROM users WHERE email = '${email}') AS email_exists`;
+
+  pool.query(query_findByEmail, (err, res) => {
+    //if error in query
+    if (err) {
+      console.error(`Error in query ${query_findByEmail}`);
+      request.flash("error", "Query Error");
+      return response.redirect("/subscribe");
+    } else {
+      const emailExists = res.rows[0].email_exists;
+      //if email exits, notify user
+      if (emailExists) {
+        request.flash("error", "User aready exists.");
+        return response.redirect("/subscribe");
+      }
+      //add new user to database
+      else {
+        let query = `INSERT INTO users (email,password) VALUES ('${email}', '${password}')`;
+        pool.query(query, (err, res) => {
+          if (err) {
+            console.log("Error inserting user:", err);
+            request.flash("error", err);
+            return response.redirect("/subscribe");
+          } else {
+            response.send("USER SUBSCRIBED SUCEFULLY!");
+          }
+        });
+      }
     }
-};
+  });
+});
+*/
 
-async function getAllLists(){
-    let allList = await mailchimpClient.lists.getAllLists(); 
-    console.log("all lists: " + JSON.stringify(allList) );
-    return allList;
+//optimized
+app.post("/subscribe", (request, response) => {
+    const { email, password } = request.body;
+    const query_findByEmail = 'SELECT EXISTS (SELECT 1 FROM users WHERE email = $1) AS email_exists';
+    const query_insertUser = 'INSERT INTO users (email, password) VALUES ($1, $2)';
+  
+    pool.query(query_findByEmail, [email], (err, res) => {
+      if (err) {
+        console.error(`Error in query ${query_findByEmail}`);
+        request.flash("error", "Query Error");
+        return response.redirect("/subscribe");
+      }
+  
+      const emailExists = res.rows[0].email_exists;
+  
+      if (emailExists) {
+        request.flash("error", "User already exists.");
+        return response.redirect("/subscribe");
+      }
+  
+      pool.query(query_insertUser, [email, password], (err, res) => {
+        if (err) {
+          console.log("Error inserting user:", err);
+          request.flash("error", err);
+          return response.redirect("/subscribe");
+        } else {
+          response.send("USER SUBSCRIBED SUCCESSFULLY!");
+        }
+      });
+    });
+  });
+
+  app.get("/customize", (request, response) => {
+    response.render("customize", {categories:categories, countries:countries, languages:languages});
+  });  
+
+  app.get("/news-page", (request, response) => {
+    response.render("news-page", {categories:categories, countries:countries, languages:languages});
+  });
+
+  app.post("/news-page", async (request, response) => {
+    if (!request.body) {
+      return response.status(400).send({ status: "not received" });
+    }
+  
+    const { category, language, country } = request.body;
+  
+    try {
+      const newsResponse = await newsapi.v2.topHeadlines({        
+        category: category,
+        language: language,
+        country: country,
+      });
+  
+      // Handle successful response
+      console.log(newsResponse);
+      /*
+        {
+          status: "ok",
+          articles: [...]
+        }
+      */
+  
+      // Send the response back to the client
+      response.send(newsResponse);
+    } catch (error) {
+      // Handle error when calling the News API
+      console.error("Error occurred while calling News API:", error);
+  
+      // Send an error response back to the client
+      response.status(500).send({ status: "error", message: "Internal server error" });
+    }
+  });
+  
+
+async function mailchimpPing(res) {
+  try {
+    const pingRes = await mailchimpClient.ping.get();
+    console.log("Ping Response: " + JSON.stringify(pingRes));
+    console.log("health status: " + pingRes.health_status);
+    if (pingRes.health_status === "Everything's Chimpy!") {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    res.sendFile(__dirname + "/");
+    console.log("Error..." + e.message);
+    return false;
+  } finally {
+    //console.log ('finally');
+  }
 }
 
-app.get ('/subscribe/', (request, response) => {
-    response.sendFile(__dirname + '/');
+async function getAllLists() {
+  let allList = await mailchimpClient.lists.getAllLists();
+  console.log("all lists: " + JSON.stringify(allList));
+  return allList;
+}
+
+function topHeadLines () {
+    const url = `https://newsapi.org/v2/top-headlines?country=us&apiKey=${NEWS_API_KEY}`;
+}
+
+app.listen(process.env.PORT || 4000, () => {
+  console.log(`app listening on port 4000`);
 });
-
-app.post('/subscribe', (req, res)=>{   
-    console.log("POST subscribe") ;
-    console.log(req.body);
-    //using desconstruccion
-    const { first_name, lastname, email } = req.body;
-        
-    /*https://mailchimp.com/developer/marketing/api/abuse-reports/*/
-    //Audience > Preference Center > Settings > Audience fileds and *|MERGE|* tags
-    // FNAME, LNAME, ADDRESS, PHONE, BIRTHDAY,
-    const subscribingUser = {
-    };
-
-    const userInfo = {
-        email_address: email,
-        status:"subscribed",
-        merge_fields:{
-            FNAME : first_name,
-            LNAME : lastname                    
-        }
-    };
-    
-    mailchimpClient.setConfig({
-        apiKey: chimpApiKey,
-        server: "us14"
-    });
-   
-    async function addMember ()  {
-        try {
-            const chimpResponse = await mailchimpClient.lists.addListMember(AUDIENCE_ID, userInfo );
-            //console.log("mailchimp response:" + chimpResponse.id);
-            //console.log ("add member response: " + JSON.stringify(chimpResponse));
-            if (chimpResponse.id){
-                 console.log ("added member: "+ chimpResponse.id);
-                return true;
-            } else {
-                return false;
-            }            
-        }catch (e) {
-            console.log("addMember error: " + e.message);
-            return false;
-        }
-      };
-    
-    if (addMember()) {
-        res.sendFile(__dirname + '/');       
-    } else{
-        res.send("we run into problem");
-    }
-        
-});
-  
-app.listen( process.env.PORT  || 4000, () => {
-  console.log(`app listening on port 4000`)
-})
-
-
-
-
-
