@@ -71,9 +71,6 @@ var languageData = require('./languages.js');
 const countries = countryData.getCountriesObject();
 const languages = languageData.getLanguagesObject();
 
-const AUDIENCE_ID = process.env.AUDIENCE_ID;
-
-
 app.get("/", (req, res) => {
   res.render("login");
 });
@@ -197,7 +194,7 @@ app.post("/subscribe", (request, response) => {
     }
   });
   
-
+/*
 async function mailchimpPing(res) {
   try {
     const pingRes = await mailchimpClient.ping.get();
@@ -222,6 +219,7 @@ async function getAllLists() {
   console.log("all lists: " + JSON.stringify(allList));
   return allList;
 }
+*/
 
 function topHeadLines () {
     const url = `https://newsapi.org/v2/top-headlines?country=us&apiKey=${NEWS_API_KEY}`;
