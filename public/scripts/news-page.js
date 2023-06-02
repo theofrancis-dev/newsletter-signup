@@ -40,6 +40,7 @@ const { urlencoded } = require("express");
           const author = articles[i].author;
           const article_url = articles[i].url;
           const news_content = articles[i].content;
+           news_content = news_content.substring(100);
           const news_source = source.name;
 
           //console.log(`source id: ${source.id}`);
