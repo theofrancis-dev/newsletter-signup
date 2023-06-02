@@ -8,6 +8,8 @@ https://codeseven.github.io/toastr/demo.html
 
 newsapi
 https://newsapi.org/docs/endpoints/top-headlines
+https://github.com/bzarras/newsapi
+
 
 
 
@@ -27,6 +29,9 @@ $ npm install pg
 
 ###To start the project
 $ nodemon
+or
+$node app.js
+
 
 
 news api used:
