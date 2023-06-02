@@ -42,14 +42,14 @@ const { urlencoded } = require("express");
           const news_content = articles[i].content;
           const news_source = source.name;
 
-          console.log(`source id: ${source.id}`);
-          console.log(`source: ${news_source}`);
-          console.log(`author: ${author}`);
-          console.log(`title: ${news_title}`);
-          console.log(`url: ${article_url}`);
-          console.log(`urlToImage: ${image_url}`);
-          console.log(`publishedAt: ${publish_time}`);
-          console.log(`content: ${news_content}`);
+          //console.log(`source id: ${source.id}`);
+          //console.log(`source: ${news_source}`);
+          //console.log(`author: ${author}`);
+          //console.log(`title: ${news_title}`);
+          //console.log(`url: ${article_url}`);
+          //console.log(`urlToImage: ${image_url}`);
+          //console.log(`publishedAt: ${publish_time}`);
+          //console.log(`content: ${news_content}`);
           
           result=result.concat('<div class="col mb-4">','<div class="card" style="max-width: 400px;">')
           result=result.concat('<img src="',image_url, '"class="card-img-top" alt="News Image">');
