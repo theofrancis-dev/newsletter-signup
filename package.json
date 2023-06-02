@@ -8,8 +8,7 @@
   },
   "author": "vertexweb developer",
   "license": "ISC",
-  "dependencies": {
-    "@mailchimp/mailchimp_marketing": "^3.0.74",
+  "dependencies": {    
     "connect-flash": "^0.1.1",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.3",
