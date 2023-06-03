@@ -81,9 +81,20 @@ const countryData = {
       za: 'South Africa'
     };
     return countryNames[countryCode] || 'Unknown';
+  },
+  getCountryList : function (){
+    return test_two_letter_country;
   }
+ 
 };
 
+
+var test_two_letter_country = ["ar","at","au","bg","br","ca","ch","cn","co","cu","cz","de","eg",
+"fr","gb","gr","hk","hu","id","ie","il","in","it","jp","kr","lt","lv","ma","mx","my","ng","nl","no","nz","se","sg","si","tr","tw","ua","us","ve","za"];
+
+const two_letter_country = ["ae","ar","at","au","be","bg","br","ca","ch","cn","co","cu","cz","de","eg",
+"fr","gb","gr","hk","hu","id","ie","il","in","it","jp","kr","lt","lv","ma","mx","my","ng","nl","no","nz",
+"ph","pl","pt","ro","rs","ru","sa","se","sg","si","sk","th","tr","tw","ua","us","ve","za"];
 //const countries = countryData.getCountriesObject();
 //console.log(countries);
 //When you run this code, the `countries` variable will contain an array of JavaScript objects, with each object representing a country in the format you specified.

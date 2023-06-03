@@ -161,6 +161,51 @@ app.post("/subscribe", (request, response) => {
     response.render("news-page", {categories:categories, countries:countries, languages:languages});
   });
 
+  app.get("/topheadlines", (request, response) => {
+    const countries = countryData.getCountryList();
+    console.log(`countries: ${countries}`);
+    const newsPromises = [];
+  
+    countries.forEach((country) => {
+      const promise = newsapi.v2.topHeadlines({
+        country: country,
+      });
+      newsPromises.push(promise);
+    });
+  
+    Promise.all(newsPromises)
+      .then((newsResponses) => {
+        console.log("Rendering now...");
+        response.render("topheadlines", { headlines: newsResponses });
+      })
+      .catch((error) => {
+        // Handle error when calling the News API
+        console.error("Error occurred while calling News API:", error);
+  
+        // Send an error response back to the client
+        response.status(500).send({ status: "error", message: "Internal server error" });
+      });
+  });
+  
+
+  function getNews (item,index) {
+    try {
+      console.log(`country: ${country}`);
+      newsapi.v2.topHeadlines({        
+        country: country,
+      }).then (response => {
+        console.log(response);
+        news_responses.push(response);
+      });
+    } catch (error) {
+      // Handle error when calling the News API
+      console.error("Error occurred while calling News API:", error);
+  
+      // Send an error response back to the client
+      response.status(500).send({ status: "error", message: "Internal server error" });
+    }    
+  }
+
   app.post("/news-page", async (request, response) => {
     if (!request.body) {
       return response.status(400).send({ status: "not received" });

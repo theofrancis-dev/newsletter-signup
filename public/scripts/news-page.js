@@ -22,12 +22,7 @@ const { urlencoded } = require("express");
       body: JSON.stringify(data)
     })
       .then(response => response.json())
-      .then (data => {
-        //console.log (`status code: ${response.status}`);
-        //console.log(`headers: ${response.headers}`);
-       
-        //handle the JSON data
-        //console.log(data);    
+      .then (data => {        
           
         let result = "";  
         const {status, totalResults, articles} = data; 

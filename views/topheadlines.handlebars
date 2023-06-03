@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Front Page</title>
+  <!-- Include Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    /* Adjust the styles as needed */
+    html,
+    body {
+      height: 100%;
+    }
+    .container-fluid {
+      padding-top: 20px;
+      padding-bottom: 20px;
+    }
+    #news-container {
+      height: calc(100% - 220px);
+      overflow-y: scroll;
+    }
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .content {
+      flex: 1;
+    }
+  </style>
+  <script src="scripts/news-page.js"></script>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- Top row -->
+    <div class="container-fluid bg-light">
+      <div class="row">
+        <div class="col">
+          <h1>Welcome, User!</h1>
+        </div>
+        <div class="col">
+          <!-- Menu goes here -->
+          <ul class="nav justify-content-end">
+            <li class="nav-item">
+              <a class="nav-link" href="#">Menu Item 1</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Menu Item 2</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Menu Item 3</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+<!-- Second row -->
+<div class="container-fluid">
+    <div class="row align-items-center">
+        <h4>Top Headlines</h4>     
+    </div>
+</div>
+
+<hr>
+    <!-- Third row -->
+    <div class="container">
+      <span class="label label-success" id="sucess_label">Success Label</span>
+      <div class="row" id="news-container">
+         {{#each headlines}}
+           <div>          
+            {{#each this.articles}}
+              <p>                
+                {{this.title}}<br>
+                {{this.description}}<br>
+                {{this.content}}
+                <a href="{{this.url}}" targe=""_blank>-></a>
+              </p><hr>
+            {{/each}}            
+           </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <!-- Fourth row (sticky footer) -->
+    <footer class="container-fluid bg-light">
+      <div class="row">
+        <div class="col">
+          <p>This is the last row.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Include Bootstrap JS -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
