@@ -70,6 +70,10 @@ var countryData = require('./countries.js');
 var languageData = require('./languages.js');
 const countries = countryData.getCountriesObject();
 const languages = languageData.getLanguagesObject();
+//TODO:
+// delete this when tested
+var mediastack = require('./mediastack');
+
 
 app.get("/", (req, res) => {
   res.render("login");
@@ -157,54 +161,95 @@ app.post("/subscribe", (request, response) => {
     response.render("customize", {categories:categories, countries:countries, languages:languages});
   });  
 
-  app.get("/news-page", (request, response) => {
+  app.get("/news", (request, response) => {
     response.render("news-page", {categories:categories, countries:countries, languages:languages});
   });
 
-  app.get("/topheadlines", (request, response) => {
-    const countries = countryData.getCountryList();
-    console.log(`countries: ${countries}`);
-    const newsPromises = [];
+  const Cache = require( "node-cache" ); // Replace with your chosen caching library
+  const cache = new Cache(); // Initialize the cache
   
-    countries.forEach((country) => {
-      const promise = newsapi.v2.topHeadlines({
+  const FETCH_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+  //this variables for topheadlines and are set by getNews
+  let countryList = countryData.getCountryList();
+  let newsApiResponse;
+  
+  function fetchNews() {
+    console.log("[fetchNews] Fetching the news from newsapi...");
+  
+    const countryPromises = countryList.map((country) => {
+      console.log(`Getting news for country: ${country}`);
+      return newsapi.v2.topHeadlines({
         country: country,
       });
-      newsPromises.push(promise);
     });
   
-    Promise.all(newsPromises)
+    return Promise.all(countryPromises)
       .then((newsResponses) => {
-        console.log("Rendering now...");
-        response.render("topheadlines", { headlines: newsResponses });
+        console.log("News fetching is complete.");
+        newsApiResponse = newsResponses;
+        cache.set('news', newsApiResponse); // Update the cache with the new data
+        return newsResponses;
       })
       .catch((error) => {
-        // Handle error when calling the News API
         console.error("Error occurred while calling News API:", error);
-  
-        // Send an error response back to the client
-        response.status(500).send({ status: "error", message: "Internal server error" });
+        throw new Error('Internal server error');
       });
+  }
+  
+  // Fetch news on server startup or whenever needed
+  fetchNews();
+  
+  // Schedule news fetching every 6 hours
+  setInterval(fetchNews, FETCH_INTERVAL);
+  
+  app.get("/topheadlines", (request, response) => {
+    console.log('GET /topheadlines');
+  
+    const cachedNews = cache.get('news');
+  
+    if (cachedNews) {
+      console.log('Using cached news data.');
+      response.render("topheadlines", { headlines: cachedNews });
+    } else {
+      console.log('Cached news data not found. Fetching news...');
+      fetchNews()
+        .then((newsResponses) => {
+          console.log('End Fetching news. Rendering page.');
+          response.render("topheadlines", { headlines: newsResponses });
+        })
+        .catch((error) => {
+          console.error("Error occurred while fetching news:", error);
+          response.status(500).send({ status: "error", message: "Internal server error" });
+        });
+    }
   });
   
-
-  function getNews (item,index) {
-    try {
-      console.log(`country: ${country}`);
-      newsapi.v2.topHeadlines({        
-        country: country,
-      }).then (response => {
-        console.log(response);
-        news_responses.push(response);
-      });
-    } catch (error) {
+  
+  app.get("/mediastack", (request, response)=>{
+    const mediastack_response =  mediastack.response;
+    //response.render("topheadlines", { headlines: newsResponses });
+    response.render("mediastack", {news:mediastack_response});
+    //response.send(json_res);
+    //response.render("/mediastack", {response:response});
+  });
+ 
+//  function getNews (item,index) {
+//   try {
+//      console.log(`country: ${country}`);
+//      newsapi.v2.topHeadlines({        
+//        country: country,
+//      }).then (response => {
+//        console.log(response);
+//        news_responses.push(response);
+//      });
+//   } catch (error) {
       // Handle error when calling the News API
-      console.error("Error occurred while calling News API:", error);
+//      console.error("Error occurred while calling News API:", error);
   
       // Send an error response back to the client
-      response.status(500).send({ status: "error", message: "Internal server error" });
-    }    
-  }
+//      response.status(500).send({ status: "error", message: "Internal server error" });
+//    }    
+//  }
 
   app.post("/news-page", async (request, response) => {
     if (!request.body) {

@@ -41,7 +41,7 @@
           <!-- Menu goes here -->
           <ul class="nav justify-content-end">
             <li class="nav-item">
-              <a class="nav-link" href="/topheadlines">topheadlines</a>
+              <a class="nav-link" href="#">Menu Item 1</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/mediastack">mediastack</a>
@@ -56,34 +56,36 @@
 
 <!-- Second row -->
 <div class="container-fluid">
-    <div class="row align-items-center">
-        <h4>Top Headlines</h4>     
+    <div class="row align-items-center text-center">
+        <h4>MediaStack Top Headlines</h4>   
+        <span class="label label-success" id="sucess_label">{{news.pagination.count}} articles</span>  
     </div>
 </div>
 
 <hr>
     <!-- Third row -->
     <div class="container">
-      <span class="label label-success" id="sucess_label">Success Label</span>
+      
       <div class="row" id="news-container">
-         {{#each headlines}}
-           <div>          
-            {{#each this.articles}}
-              <p>     
-                <a href="{{this.url}}" target="_blank">
-                  {{this.title}}
-                </a>          
-                <br>{{this.description}}<br>
-                {{this.content}}
-                {{#if this.urlToImage }}
-                  <br><img src="{{this.urlToImage}}" width="200px" height="auto"><br> 
-                {{/if}}
-                <b>published</b> {{this.publishedAt}}<br>
-              </p><hr>
-            {{/each}}            
+         {{#each news.data}}
+           <div>               
+              <a href="{{url}}" target="_blank"><h5>{{title}}</h5></a>
+              {{description}}<br>
+
+              {{#if image}}
+                <img src="{{image}}" width="200px" height="auto"><br>                              
+              {{/if}}
+
+              
+              {{#if author}}
+              <b>author: </b><i>{{author}}</i> 
+              {{/if}}
+              <b>source: </b><i>{{source}}</i><br>
+              category: {{category}} language: {{language}} country: {{country}} published_at: {{published_at}}    
            </div>
-        {{/each}}
-      </div>
+           <hr>
+          {{/each}}                     
+        </div>
     </div>
 
     <!-- Fourth row (sticky footer) -->
