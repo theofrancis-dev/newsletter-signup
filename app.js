@@ -168,7 +168,8 @@ app.post("/subscribe", (request, response) => {
   const Cache = require( "node-cache" ); // Replace with your chosen caching library
   const cache = new Cache(); // Initialize the cache
   
-  const FETCH_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+  const FETCH_INTERVAL = 24 * 60 * 60 * 1000; // 12 hours in milliseconds
+  //can not make more than 2 request by day because there are more than 50 countries
   //this variables for topheadlines and are set by getNews
   let countryList = countryData.getCountryList();
   let newsApiResponse;
@@ -192,12 +193,16 @@ app.post("/subscribe", (request, response) => {
       })
       .catch((error) => {
         console.error("Error occurred while calling News API:", error);
-        throw new Error('Internal server error');
+        throw new Error(error);
       });
   }
   
   // Fetch news on server startup or whenever needed
-  fetchNews();
+  try{
+    fetchNews();
+  }catch (err){
+    console.log (`error when calling NEWSAPI: ${err}`);
+  }
   
   // Schedule news fetching every 6 hours
   setInterval(fetchNews, FETCH_INTERVAL);
