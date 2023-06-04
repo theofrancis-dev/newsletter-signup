@@ -181,9 +181,11 @@ app.post("/subscribe", (request, response) => {
       console.log(`Getting news for country: ${country}`);
       return newsapi.v2.topHeadlines({
         country: country,
-      });
+      }).then((response) => {
+        response.country = country; // Add country key with corresponding value
+        return response;
+      });    
     });
-  
     return Promise.all(countryPromises)
       .then((newsResponses) => {
         console.log("News fetching is complete.");
