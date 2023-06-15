@@ -66,7 +66,7 @@ const { urlencoded } = require("express");
       });
   }
 
-  function createNewsCards(articles) {
+function createNewsCards(articles) {
  const newsContainer = document.getElementById("news-container");
 
 articles.forEach((article) => {
@@ -131,3 +131,19 @@ articles.forEach((article) => {
 
   }
     
+function collapseNews ( country) {
+  console.log ('show/hide for country: ');
+  console.log (country);
+  var className = country+"-class-sel";
+  var e = document.getElementsByClassName (className);  
+  console.log(e[0]);
+  e[0].style.display = 'none'; 
+  return;
+}
+
+function expandNews ( country) { 
+  var className = country+"-class-sel";
+  var e = document.getElementsByClassName (className);    
+  e[0].style.display = 'block'; 
+  return;
+}

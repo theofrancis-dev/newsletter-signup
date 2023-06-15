@@ -64,13 +64,18 @@
 <hr>
     <!-- Third row -->
     <div class="container">
-      <span class="label label-success" id="sucess_label">Success Label</span>
+      <!--span class="label label-success" id="sucess_label">Success Label</span-->
       <div class="row" id="news-container">
          {{#each headlines}}
-           <div>          
+           <div>                                
+            <img src="https://ipdata.co/flags/{{this.country}}.png" alt="{{this.country}} Flag" title="{{this.longName}}">
+            <button type="button" class="btn btn-success" onClick="expandNews('{{this.country}}')">  Expand</button>
+            <button type="button" class="btn btn-secondary" onClick="collapseNews('{{this.country}}')">Collapse</button>
+            <br><hr>
+            <div  class="{{this.country}}-class-sel" style="display:none;">
             {{#each this.articles}}
               <p>     
-                <a href="{{this.url}}" target="_blank">
+                <a href="{{this.url}}" target="_blank">                  
                   {{this.title}}
                 </a>          
                 <br>{{this.description}}<br>
@@ -81,6 +86,7 @@
                 <b>published</b> {{this.publishedAt}}<br>
               </p><hr>
             {{/each}}            
+            </div>
            </div>
         {{/each}}
       </div>

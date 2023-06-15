@@ -179,10 +179,12 @@ app.post("/subscribe", (request, response) => {
   
     const countryPromises = countryList.map((country) => {
       console.log(`Getting news for country: ${country}`);
+      var longName = countryData.getCountryName(country);      
       return newsapi.v2.topHeadlines({
-        country: country,
+        country: country,        
       }).then((response) => {
         response.country = country; // Add country key with corresponding value
+        response.longName = longName;
         return response;
       });    
     });
