@@ -8,6 +8,8 @@ const flash = require("express-flash");
 const path = require("path");
 const NewsAPI = require('newsapi');
 const newsapi = new NewsAPI(process.env.NEWS_API_KEY);
+const debounce = require('lodash.debounce');
+
 
 const app = express();
 
@@ -70,6 +72,8 @@ var countryData = require('./countries.js');
 var languageData = require('./languages.js');
 const countries = countryData.getCountriesObject();
 const languages = languageData.getLanguagesObject();
+
+
 //TODO:
 // delete this when tested
 var mediastack = require('./mediastack');
@@ -165,13 +169,16 @@ app.post("/subscribe", (request, response) => {
   const cache = new Cache(); // Initialize the cache
   
   const FETCH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+  let lastInvocationTime = 0;
   //can not make more than 1 request by day because there are more than 50 countries
   //this variables for topheadlines and are set by getNews
   let countryList = countryData.getCountryList();
   let newsApiResponse;
+  const debouncedFunction = debounce(fetchNews,FETCH_INTERVAL);
   
   function fetchNews() {
     console.log("[fetchNews] Fetching the news from newsapi...");
+    lastInvocationTime = Date.now();
   
     const countryPromises = countryList.map((country) => {
       console.log(`Getting news for country: ${country}`);
@@ -209,7 +216,7 @@ app.post("/subscribe", (request, response) => {
       //if there is not cahced news is because something went wwrong while
       //calling fetchNews, so I will retunr an error page 
       //indicating to try again later.
-      response.render("error_page");
+      response.render("error_page", {remainingTime:remainingTime});
 
       //--old code. delete when every thingis ok
       /*console.log('Cached news data not found. Fetching news...');
@@ -236,17 +243,50 @@ app.post("/subscribe", (request, response) => {
     //response.send(json_res);
     //response.render("/mediastack", {response:response});
   });
- 
+
+  function formatTime(milliseconds) {
+    const hours = Math.floor(milliseconds / (1000 * 60 * 60));
+    const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+  
+    let formattedTime = '';
+    if (hours > 0) {
+      formattedTime += hours + ' hour';
+      if (hours > 1) {
+        formattedTime += 's';
+      }
+    }
+    if (minutes > 0) {
+      formattedTime += (hours > 0 ? ' and ' : '') + minutes + ' minute';
+      if (minutes > 1) {
+        formattedTime += 's';
+      }
+    }
+    return formattedTime;
+  }
+  
+function remainingTime () {
+  const elapsedTime = Date.now() - lastInvocationTime;
+  const remainingTime = (FETCH_INTERVAL - (elapsedTime % FETCH_INTERVAL)) || FETCH_INTERVAL;
+  return (`Remaining time until next invocation: ${formatTime(remainingTime)}`);
+}
+
 app.listen(process.env.PORT || 4000, () => {
   console.log(`app listening on port 4000`);
-  // Fetch news on server startup or whenever needed
+
+  // Calculate the remaining time until the next invocation
+  //const elapsedTime = Date.now() - lastInvocationTime;
+  //const remainingTime = (FETCH_INTERVAL - (elapsedTime % FETCH_INTERVAL)) || FETCH_INTERVAL;
+  //console.log(`Remaining time until next invocation: ${formatTime(remainingTime)}`);
+  console.log(remainingTime () );
+
+  // Fetch news on server startup
   try{
-      fetchNews();
+    debouncedFunction(); 
     }catch (err){
       console.log (`error when calling NEWSAPI: ${err}`);
   }
 
   // Schedule news fetching every 6 hours
-  setInterval(fetchNews, FETCH_INTERVAL);
+  //setInterval(fetchNews, FETCH_INTERVAL);
 
 });

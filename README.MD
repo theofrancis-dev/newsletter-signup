@@ -22,6 +22,7 @@ $ npm install cookie-parser
 $ npm install express-session connect-flash express-toastr
 $ npm install express-flash
 $ npm install newsapi --save
+$ npm install lodash.debounce
 
 to use postgres:
 $ npm install pg 
