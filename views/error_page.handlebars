@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Front Page</title>
+  <title>Error Page</title>
   <!-- Include Bootstrap CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <style>
@@ -26,8 +26,7 @@
     .content {
       flex: 1;
     }
-  </style>
-  <script src="scripts/topheadlines.js"></script>
+  </style>  
 </head>
 <body>
   <div class="wrapper">
@@ -47,7 +46,7 @@
               <a class="nav-link" href="/mediastack">mediastack</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Menu Item 3</a>
+              <a class="nav-link" href="#">About</a>
             </li>
           </ul>
         </div>
@@ -66,29 +65,7 @@
     <div class="container">
       <!--span class="label label-success" id="sucess_label">Success Label</span-->
       <div class="row" id="news-container">
-         {{#each headlines}}
-           <div>                                
-            <img src="https://ipdata.co/flags/{{this.country}}.png" alt="{{this.country}} Flag" title="{{this.longName}}">
-            <button type="button" class="btn btn-success" onClick="expandNews('{{this.country}}')">  Expand</button>
-            <button type="button" class="btn btn-secondary" onClick="collapseNews('{{this.country}}')">Collapse</button>
-            <br><hr>
-            <div  class="{{this.country}}-class-sel" style="display:none;">
-            {{#each this.articles}}
-              <p>     
-                <a href="{{this.url}}" target="_blank">                  
-                  {{this.title}}
-                </a>          
-                <br>{{this.description}}<br>
-                {{this.content}}
-                {{#if this.urlToImage }}
-                  <br><img src="{{this.urlToImage}}" width="200px" height="auto"><br> 
-                {{/if}}
-                <b>published</b> {{this.publishedAt}}<br>
-              </p><hr>
-            {{/each}}            
-            </div>
-           </div>
-        {{/each}}
+        <h3>Internal Server Error. Please check back later.</h3>
       </div>
     </div>
 

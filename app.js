@@ -161,15 +161,11 @@ app.post("/subscribe", (request, response) => {
     response.render("customize", {categories:categories, countries:countries, languages:languages});
   });  
 
-  app.get("/news", (request, response) => {
-    response.render("news-page", {categories:categories, countries:countries, languages:languages});
-  });
-
   const Cache = require( "node-cache" ); // Replace with your chosen caching library
   const cache = new Cache(); // Initialize the cache
   
-  const FETCH_INTERVAL = 24 * 60 * 60 * 1000; // 12 hours in milliseconds
-  //can not make more than 2 request by day because there are more than 50 countries
+  const FETCH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+  //can not make more than 1 request by day because there are more than 50 countries
   //this variables for topheadlines and are set by getNews
   let countryList = countryData.getCountryList();
   let newsApiResponse;
@@ -196,21 +192,11 @@ app.post("/subscribe", (request, response) => {
         return newsResponses;
       })
       .catch((error) => {
-        console.error("Error occurred while calling News API:", error);
-        throw new Error(error);
+        console.error(error);
+        //throw new Error(error);
       });
   }
-  
-  // Fetch news on server startup or whenever needed
-  try{
-    fetchNews();
-  }catch (err){
-    console.log (`error when calling NEWSAPI: ${err}`);
-  }
-  
-  // Schedule news fetching every 6 hours
-  setInterval(fetchNews, FETCH_INTERVAL);
-  
+    
   app.get("/topheadlines", (request, response) => {
     console.log('GET /topheadlines');
   
@@ -220,7 +206,13 @@ app.post("/subscribe", (request, response) => {
       console.log('Using cached news data.');
       response.render("topheadlines", { headlines: cachedNews });
     } else {
-      console.log('Cached news data not found. Fetching news...');
+      //if there is not cahced news is because something went wwrong while
+      //calling fetchNews, so I will retunr an error page 
+      //indicating to try again later.
+      response.render("error_page");
+
+      //--old code. delete when every thingis ok
+      /*console.log('Cached news data not found. Fetching news...');
       fetchNews()
         .then((newsResponses) => {
           console.log('End Fetching news. Rendering page.');
@@ -230,10 +222,13 @@ app.post("/subscribe", (request, response) => {
           console.error("Error occurred while fetching news:", error);
           response.status(500).send({ status: "error", message: "Internal server error" });
         });
+        */
     }
   });
   
-  
+  //TODO: to be implemented
+  //https://mediastack.com/documentation
+  //
   app.get("/mediastack", (request, response)=>{
     const mediastack_response =  mediastack.response;
     //response.render("topheadlines", { headlines: newsResponses });
@@ -242,88 +237,16 @@ app.post("/subscribe", (request, response) => {
     //response.render("/mediastack", {response:response});
   });
  
-//  function getNews (item,index) {
-//   try {
-//      console.log(`country: ${country}`);
-//      newsapi.v2.topHeadlines({        
-//        country: country,
-//      }).then (response => {
-//        console.log(response);
-//        news_responses.push(response);
-//      });
-//   } catch (error) {
-      // Handle error when calling the News API
-//      console.error("Error occurred while calling News API:", error);
-  
-      // Send an error response back to the client
-//      response.status(500).send({ status: "error", message: "Internal server error" });
-//    }    
-//  }
-
-  app.post("/news-page", async (request, response) => {
-    if (!request.body) {
-      return response.status(400).send({ status: "not received" });
-    }
-  
-    const { category, language, country } = request.body;
-  
-    try {
-      const newsResponse = await newsapi.v2.topHeadlines({        
-        category: category,
-        language: language,
-        country: country,
-      });
-  
-      // Handle successful response    
-      /*
-        {
-          status: "ok",
-          articles: [...]
-        }
-      */
-  
-      // Send the response back to the client
-      response.send(newsResponse);
-    } catch (error) {
-      // Handle error when calling the News API
-      console.error("Error occurred while calling News API:", error);
-  
-      // Send an error response back to the client
-      response.status(500).send({ status: "error", message: "Internal server error" });
-    }
-  });
-  
-/*
-async function mailchimpPing(res) {
-  try {
-    const pingRes = await mailchimpClient.ping.get();
-    console.log("Ping Response: " + JSON.stringify(pingRes));
-    console.log("health status: " + pingRes.health_status);
-    if (pingRes.health_status === "Everything's Chimpy!") {
-      return true;
-    } else {
-      return false;
-    }
-  } catch (e) {
-    res.sendFile(__dirname + "/");
-    console.log("Error..." + e.message);
-    return false;
-  } finally {
-    //console.log ('finally');
-  }
-}
-
-async function getAllLists() {
-  let allList = await mailchimpClient.lists.getAllLists();
-  console.log("all lists: " + JSON.stringify(allList));
-  return allList;
-}
-*/
-
-function topHeadLines () {
-    const url = `https://newsapi.org/v2/top-headlines?country=us&apiKey=${NEWS_API_KEY}`;
-}
-
 app.listen(process.env.PORT || 4000, () => {
   console.log(`app listening on port 4000`);
+  // Fetch news on server startup or whenever needed
+  try{
+      fetchNews();
+    }catch (err){
+      console.log (`error when calling NEWSAPI: ${err}`);
+  }
+
+  // Schedule news fetching every 6 hours
+  setInterval(fetchNews, FETCH_INTERVAL);
+
 });
