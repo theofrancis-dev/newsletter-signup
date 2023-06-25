@@ -168,7 +168,7 @@ app.post("/subscribe", (request, response) => {
   const Cache = require( "node-cache" ); // Replace with your chosen caching library
   const cache = new Cache(); // Initialize the cache
   
-  const FETCH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+  const FETCH_INTERVAL = 0.5 * 60 * 60 * 1000; // 24 hours in milliseconds
   let lastInvocationTime = 0;
   //can not make more than 1 request by day because there are more than 50 countries
   //this variables for topheadlines and are set by getNews
