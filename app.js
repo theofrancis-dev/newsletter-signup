@@ -208,9 +208,8 @@ function currentTime (){
   const Cache = require( "node-cache" ); 
   const cache = new Cache(); // Initialize the cache
   
-  const FETCH_INTERVAL = 0.15 * 60 * 60 * 1000; // 24 hours in milliseconds
-  let lastInvocationTime = 0;
-  let lastNews;  
+  const FETCH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+  let lastInvocationTime = 0;  
   let countryList = countryData.getCountryList();
   let newsApiResponse;
   //const debouncedFunction = debounce(fetchNews,FETCH_INTERVAL);
@@ -233,8 +232,7 @@ function currentTime (){
     return Promise.all(countryPromises)
       .then((newsResponses) => {        
         newsApiResponse = newsResponses;
-        cache.set('news', newsApiResponse); // Update the cache with the new data
-        lastNews = cache.get('news');
+        cache.set('news', newsApiResponse); // Update the cache with the new data        
         console.log(`${currentTime()} News fetching is complete.`);
         return newsResponses;
       })
@@ -250,11 +248,7 @@ function currentTime (){
     if (cachedNews) {
       console.log('Using cached news data.');
       response.render("topheadlines", { headlines: cachedNews });
-    } else if (lastNews)
-    { 
-      console.log('Using last news data.');
-      response.render("topheadlines", { headlines: lastNews });
-    }
+    } 
     else {
       //if there is not cached news is because something went wwrong while
       //calling fetchNews, so I will retunr an error page 
