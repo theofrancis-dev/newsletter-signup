@@ -165,75 +165,7 @@ app.post("/subscribe", (request, response) => {
     response.render("customize", {categories:categories, countries:countries, languages:languages});
   });  
 
-  const Cache = require( "node-cache" ); // Replace with your chosen caching library
-  const cache = new Cache(); // Initialize the cache
-  
-  const FETCH_INTERVAL = 0.5 * 60 * 60 * 1000; // 24 hours in milliseconds
-  let lastInvocationTime = 0;
-  //can not make more than 1 request by day because there are more than 50 countries
-  //this variables for topheadlines and are set by getNews
-  let countryList = countryData.getCountryList();
-  let newsApiResponse;
-  const debouncedFunction = debounce(fetchNews,FETCH_INTERVAL);
-  
-  function fetchNews() {
-    console.log("[fetchNews] Fetching the news from newsapi...");
-    lastInvocationTime = Date.now();
-  
-    const countryPromises = countryList.map((country) => {
-      console.log(`Getting news for country: ${country}`);
-      var longName = countryData.getCountryName(country);      
-      return newsapi.v2.topHeadlines({
-        country: country,        
-      }).then((response) => {
-        response.country = country; // Add country key with corresponding value
-        response.longName = longName;
-        return response;
-      });    
-    });
-    return Promise.all(countryPromises)
-      .then((newsResponses) => {
-        console.log("News fetching is complete.");
-        newsApiResponse = newsResponses;
-        cache.set('news', newsApiResponse); // Update the cache with the new data
-        return newsResponses;
-      })
-      .catch((error) => {
-        console.error(error);
-        //throw new Error(error);
-      });
-  }
-    
-  app.get("/topheadlines", (request, response) => {
-    console.log('GET /topheadlines');
-  
-    const cachedNews = cache.get('news');
-  
-    if (cachedNews) {
-      console.log('Using cached news data.');
-      response.render("topheadlines", { headlines: cachedNews });
-    } else {
-      //if there is not cahced news is because something went wwrong while
-      //calling fetchNews, so I will retunr an error page 
-      //indicating to try again later.
-      response.render("error_page", {remainingTime:remainingTime});
-
-      //--old code. delete when every thingis ok
-      /*console.log('Cached news data not found. Fetching news...');
-      fetchNews()
-        .then((newsResponses) => {
-          console.log('End Fetching news. Rendering page.');
-          response.render("topheadlines", { headlines: newsResponses });
-        })
-        .catch((error) => {
-          console.error("Error occurred while fetching news:", error);
-          response.status(500).send({ status: "error", message: "Internal server error" });
-        });
-        */
-    }
-  });
-  
-  //TODO: to be implemented
+    //TODO: to be implemented
   //https://mediastack.com/documentation
   //
   app.get("/mediastack", (request, response)=>{
@@ -270,23 +202,79 @@ function remainingTime () {
   return (`Remaining time until next invocation: ${formatTime(remainingTime)}`);
 }
 
+function currentTime (){
+  return new Date().toLocaleString();
+}
+  const Cache = require( "node-cache" ); 
+  const cache = new Cache(); // Initialize the cache
+  
+  const FETCH_INTERVAL = 0.15 * 60 * 60 * 1000; // 24 hours in milliseconds
+  let lastInvocationTime = 0;
+  let lastNews;  
+  let countryList = countryData.getCountryList();
+  let newsApiResponse;
+  //const debouncedFunction = debounce(fetchNews,FETCH_INTERVAL);
+  
+  function fetchNews() {
+    lastInvocationTime = Date.now();
+    console.log(`${currentTime()} [fetchNews] Fetching the news from newsapi...`);
+      
+    const countryPromises = countryList.map((country) => {
+      console.log(`Getting news for country: ${country}`);
+      var longName = countryData.getCountryName(country);      
+      return newsapi.v2.topHeadlines({
+        country: country,        
+      }).then((response) => {
+        response.country = country; // Add country key with corresponding value
+        response.longName = longName;
+        return response;
+      });    
+    });
+    return Promise.all(countryPromises)
+      .then((newsResponses) => {        
+        newsApiResponse = newsResponses;
+        cache.set('news', newsApiResponse); // Update the cache with the new data
+        lastNews = cache.get('news');
+        console.log(`${currentTime()} News fetching is complete.`);
+        return newsResponses;
+      })
+      .catch((error) => {
+        console.error(error);        
+      });
+  }
+    
+  app.get("/topheadlines", (request, response) => {    
+    console.log(`${currentTime()} /topheadlines`);
+  
+    let cachedNews = cache.get('news');
+    if (cachedNews) {
+      console.log('Using cached news data.');
+      response.render("topheadlines", { headlines: cachedNews });
+    } else if (lastNews)
+    { 
+      console.log('Using last news data.');
+      response.render("topheadlines", { headlines: lastNews });
+    }
+    else {
+      //if there is not cached news is because something went wwrong while
+      //calling fetchNews, so I will retunr an error page 
+      //indicating to try again later.
+      console.log( new Date().toLocaleDateString());
+      response.render("error_page", {remainingTime:remainingTime});    
+    }
+  });
+  
 app.listen(process.env.PORT || 4000, () => {
   console.log(`app listening on port 4000`);
 
-  // Calculate the remaining time until the next invocation
-  //const elapsedTime = Date.now() - lastInvocationTime;
-  //const remainingTime = (FETCH_INTERVAL - (elapsedTime % FETCH_INTERVAL)) || FETCH_INTERVAL;
-  //console.log(`Remaining time until next invocation: ${formatTime(remainingTime)}`);
-  console.log(remainingTime () );
-
   // Fetch news on server startup
   try{
-    debouncedFunction(); 
+    fetchNews();
+    //debouncedFunction(); 
+    console.log(`${currentTime()} ${remainingTime ()}` );
     }catch (err){
       console.log (`error when calling NEWSAPI: ${err}`);
   }
-
-  // Schedule news fetching every 6 hours
-  //setInterval(fetchNews, FETCH_INTERVAL);
+  setInterval(fetchNews, FETCH_INTERVAL);
 
 });
