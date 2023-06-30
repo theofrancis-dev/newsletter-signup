@@ -4,7 +4,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const bodyParser = require("body-parser");
-const exphbs  = require("express-handlebars");
+const { engine } = require("express-handlebars");
 const flash = require("express-flash");
 const path = require("path");
 const NewsAPI = require('newsapi');
@@ -39,18 +39,18 @@ app.use(
 //    next()
 //})
 app.use(flash());
-app.engine("handlebars", exphbs({ defaultLayout: 'main' }));
+app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 
 // Register the helper function
-const Handlebars = require('handlebars');
+/*const Handlebars = require('handlebars');
 Handlebars.registerHelper('replaceLinkWithText', function(description) {
   const linkRegex = /(https?:\/\/[^\s]+)/gi;
   const linkText = '<a href="$1" target="_blank">go to source</a>';
 
   return description.replace(linkRegex, linkText);
 });
-
+*/
 
 app.set("views", "./views");
 
@@ -175,13 +175,6 @@ app.post("/subscribe", (request, response) => {
     response.render("customize", {categories:categories, countries:countries, languages:languages});
   });  
   
-  handlebars.registerHelper('replaceLinkWithText', function(description) {
-    const linkRegex = /(https?:\/\/[^\s]+)/gi;
-    const linkText = '<a href="$1" target="_blank">go to source</a>';
-  
-    return description.replace(linkRegex, linkText);
-  });
-
     //TODO: to be implemented
   //https://mediastack.com/documentation
   //
