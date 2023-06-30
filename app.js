@@ -1,4 +1,5 @@
 require("dotenv").config();
+const VERSION = "1.0.01 06/30/2023"
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
@@ -8,8 +9,6 @@ const flash = require("express-flash");
 const path = require("path");
 const NewsAPI = require('newsapi');
 const newsapi = new NewsAPI(process.env.NEWS_API_KEY);
-const debounce = require('lodash.debounce');
-
 
 const app = express();
 
@@ -218,8 +217,7 @@ function currentTime (){
     lastInvocationTime = Date.now();
     console.log(`${currentTime()} [fetchNews] Fetching the news from newsapi...`);
       
-    const countryPromises = countryList.map((country) => {
-      console.log(`Getting news for country: ${country}`);
+    const countryPromises = countryList.map((country) => {      
       var longName = countryData.getCountryName(country);      
       return newsapi.v2.topHeadlines({
         country: country,        
@@ -247,7 +245,7 @@ function currentTime (){
     let cachedNews = cache.get('news');
     if (cachedNews) {
       console.log('Using cached news data.');
-      response.render("topheadlines", { headlines: cachedNews });
+      response.render("topheadlines", { headlines: cachedNews, version:VERSION });
     } 
     else {
       //if there is not cached news is because something went wwrong while
@@ -263,11 +261,11 @@ app.listen(process.env.PORT || 4000, () => {
 
   // Fetch news on server startup
   try{
-    fetchNews();
-    //debouncedFunction(); 
+    console.log('starting app...')
+    fetchNews();    
     console.log(`${currentTime()} ${remainingTime ()}` );
     }catch (err){
-      console.log (`error when calling NEWSAPI: ${err}`);
+      console.log (`${currentTime()} error while calling NEWSAPI: ${err}`);
   }
   setInterval(fetchNews, FETCH_INTERVAL);
 
