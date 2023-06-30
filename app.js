@@ -209,6 +209,7 @@ function currentTime (){
   
   const FETCH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
   let lastInvocationTime = 0;  
+  let lastSuccessful = "";
   let countryList = countryData.getCountryList();
   let newsApiResponse;
   //const debouncedFunction = debounce(fetchNews,FETCH_INTERVAL);
@@ -232,6 +233,7 @@ function currentTime (){
         newsApiResponse = newsResponses;
         cache.set('news', newsApiResponse); // Update the cache with the new data        
         console.log(`${currentTime()} News fetching is complete.`);
+        lastSuccessful = currentTime();
         return newsResponses;
       })
       .catch((error) => {
@@ -245,7 +247,7 @@ function currentTime (){
     let cachedNews = cache.get('news');
     if (cachedNews) {
       console.log('Using cached news data.');
-      response.render("topheadlines", { headlines: cachedNews, version:VERSION });
+      response.render("topheadlines", { headlines: cachedNews, version:VERSION, lastSuccessful:lastSuccessful });
     } 
     else {
       //if there is not cached news is because something went wwrong while
