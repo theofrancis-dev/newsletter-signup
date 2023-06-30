@@ -4,7 +4,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const bodyParser = require("body-parser");
-const { engine } = require("express-handlebars");
+const exphbs  = require("express-handlebars");
 const flash = require("express-flash");
 const path = require("path");
 const NewsAPI = require('newsapi');
@@ -39,8 +39,19 @@ app.use(
 //    next()
 //})
 app.use(flash());
-app.engine("handlebars", engine());
+app.engine("handlebars", exphbs({ defaultLayout: 'main' }));
 app.set("view engine", "handlebars");
+
+// Register the helper function
+const Handlebars = require('handlebars');
+Handlebars.registerHelper('replaceLinkWithText', function(description) {
+  const linkRegex = /(https?:\/\/[^\s]+)/gi;
+  const linkText = '<a href="$1" target="_blank">go to source</a>';
+
+  return description.replace(linkRegex, linkText);
+});
+
+
 app.set("views", "./views");
 
 //================DATABASE CONNECTION (POSTGRESQL)===============================
@@ -163,6 +174,13 @@ app.post("/subscribe", (request, response) => {
   app.get("/customize", (request, response) => {
     response.render("customize", {categories:categories, countries:countries, languages:languages});
   });  
+  
+  handlebars.registerHelper('replaceLinkWithText', function(description) {
+    const linkRegex = /(https?:\/\/[^\s]+)/gi;
+    const linkText = '<a href="$1" target="_blank">go to source</a>';
+  
+    return description.replace(linkRegex, linkText);
+  });
 
     //TODO: to be implemented
   //https://mediastack.com/documentation
@@ -209,6 +227,7 @@ function currentTime (){
   
   const FETCH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
   let lastInvocationTime = 0;  
+  let lastSuccessful = "";
   let countryList = countryData.getCountryList();
   let newsApiResponse;
   //const debouncedFunction = debounce(fetchNews,FETCH_INTERVAL);
@@ -232,6 +251,7 @@ function currentTime (){
         newsApiResponse = newsResponses;
         cache.set('news', newsApiResponse); // Update the cache with the new data        
         console.log(`${currentTime()} News fetching is complete.`);
+        lastSuccessful = currentTime();
         return newsResponses;
       })
       .catch((error) => {
@@ -245,7 +265,7 @@ function currentTime (){
     let cachedNews = cache.get('news');
     if (cachedNews) {
       console.log('Using cached news data.');
-      response.render("topheadlines", { headlines: cachedNews, version:VERSION });
+      response.render("topheadlines", { headlines: cachedNews, version:VERSION, lastSuccessful:lastSuccessful });
     } 
     else {
       //if there is not cached news is because something went wwrong while
