@@ -192,7 +192,7 @@ app.post("/subscribe", (request, response) => {
       item.description = replaceLinkWithText (item.description);
     })
       
-    response.render("mediastack", {news:mediastack_response});
+    response.render("mediastack", {news:mediastack_response, version:VERSION, lastSuccessful: msLastSucessful});
     
   });
 
@@ -230,11 +230,16 @@ function currentTime (){
   
   const FETCH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
   let lastInvocationTime = 0;  
-  let lastSuccessful = "";
+  let lastSuccessful = "06/30/2023";
+  let msLastSucessful = "06/30/2023";
   let countryList = countryData.getCountryList();
   let newsApiResponse;
   //const debouncedFunction = debounce(fetchNews,FETCH_INTERVAL);
   
+  async function fetchFromMediaStack () {
+    console.log(`${currentTime()} [fetchFromMediaStack] Fetching the news from MediaSatck...`);
+  }
+
   function fetchNews() {
     lastInvocationTime = Date.now();
     console.log(`${currentTime()} [fetchNews] Fetching the news from newsapi...`);
