@@ -42,15 +42,21 @@ app.use(flash());
 app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 
-// Register the helper function
-/*const Handlebars = require('handlebars');
-Handlebars.registerHelper('replaceLinkWithText', function(description) {
-  const linkRegex = /(https?:\/\/[^\s]+)/gi;
-  const linkText = '<a href="$1" target="_blank">go to source</a>';
 
-  return description.replace(linkRegex, linkText);
-});
-*/
+//sometimes in the description come with the url at the end, here we replace
+//that url with the link html tags
+function replaceLinkWithText (description) {  
+  const rex = "(https://www.*)"
+  const globalRegex = new RegExp('(https://www.*)','g');
+
+  if (globalRegex.test(description)) {    
+    const match = description.match (rex);    
+    let url = description.substring(match?.index);
+    let link = '<a href= "' + url + '" target="_blank">go to source</a>';
+    description = description.replace (url,link);    
+  }
+  return description;
+};
 
 app.set("views", "./views");
 
@@ -180,10 +186,14 @@ app.post("/subscribe", (request, response) => {
   //
   app.get("/mediastack", (request, response)=>{
     const mediastack_response =  mediastack.response;
-    //response.render("topheadlines", { headlines: newsResponses });
+    //let j = JSON.parse(mediastack_response);  
+    mediastack_response.data.forEach ( (item) =>{
+      //console.log(replaceLinkWithText(item.description));
+      item.description = replaceLinkWithText (item.description);
+    })
+      
     response.render("mediastack", {news:mediastack_response});
-    //response.send(json_res);
-    //response.render("/mediastack", {response:response});
+    
   });
 
   function formatTime(milliseconds) {
