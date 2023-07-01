@@ -10,9 +10,6 @@ newsapi
 https://newsapi.org/docs/endpoints/top-headlines
 https://github.com/bzarras/newsapi
 
-
-
-
 ###How to setup the project in your local machine
 
 $ npm install -g nodemon
@@ -36,4 +33,6 @@ $node app.js
 
 news api used:
 https://newsapi.org/docs/client-libraries/node-js
+https://mediastack.com/documentation
+
 

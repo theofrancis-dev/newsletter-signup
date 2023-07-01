@@ -9,6 +9,7 @@ const flash = require("express-flash");
 const path = require("path");
 const NewsAPI = require('newsapi');
 const newsapi = new NewsAPI(process.env.NEWS_API_KEY);
+const MEDIASTACK_API_KEY = process.env.MEDIASTACK_API_KEY;
 
 const app = express();
 
@@ -88,7 +89,17 @@ var countryData = require('./countries.js');
 var languageData = require('./languages.js');
 const countries = countryData.getCountriesObject();
 const languages = languageData.getLanguagesObject();
+const Cache = require( "node-cache" ); 
+const { response } = require("har-validator");
+const cache = new Cache(); // Initialize the cache
 
+const FETCH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+let lastInvocationTime = 0;  
+let lastSuccessful = "";
+let msLastSucessful = "";
+let countryList = countryData.getCountryList();
+let newsApiResponse;
+let mediaStackResponse;
 
 //TODO:
 // delete this when tested
@@ -185,15 +196,19 @@ app.post("/subscribe", (request, response) => {
   //https://mediastack.com/documentation
   //
   app.get("/mediastack", (request, response)=>{
-    const mediastack_response =  mediastack.response;
+    //const mediastack_response =  mediastack.response;
     //let j = JSON.parse(mediastack_response);  
-    mediastack_response.data.forEach ( (item) =>{
-      //console.log(replaceLinkWithText(item.description));
-      item.description = replaceLinkWithText (item.description);
-    })
-      
-    response.render("mediastack", {news:mediastack_response, version:VERSION, lastSuccessful: msLastSucessful});
-    
+    if (mediaStackResponse){
+      mediaStackResponse.data.forEach ( (item) =>{
+        //console.log(replaceLinkWithText(item.description));
+        item.description = replaceLinkWithText (item.description);
+      })        
+      response.render("mediastack", {news:mediaStackResponse, version:VERSION, lastSuccessful: msLastSucessful});      
+    }else{
+      response.render("error_page", {remainingTime:remainingTime});
+    }
+
+   
   });
 
   function formatTime(milliseconds) {
@@ -225,20 +240,22 @@ function remainingTime () {
 function currentTime (){
   return new Date().toLocaleString();
 }
-  const Cache = require( "node-cache" ); 
-  const cache = new Cache(); // Initialize the cache
+
   
-  const FETCH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-  let lastInvocationTime = 0;  
-  let lastSuccessful = "06/30/2023";
-  let msLastSucessful = "06/30/2023";
-  let countryList = countryData.getCountryList();
-  let newsApiResponse;
-  //const debouncedFunction = debounce(fetchNews,FETCH_INTERVAL);
-  
-  async function fetchFromMediaStack () {
-    console.log(`${currentTime()} [fetchFromMediaStack] Fetching the news from MediaSatck...`);
+  async function fetchFromMediaStack() {
+    console.log(`${currentTime()} [fetchFromMediaStack] Fetching the news from MediaStack...`);
+    const resource = 'http://api.mediastack.com/v1/news?access_key=' + MEDIASTACK_API_KEY;
+    try {
+      const response = await fetch(resource);
+      mediaStackResponse = await response.json();
+      console.log(`${currentTime()} [fetchFromMediaStack] Fetching the news from MediaStack was sucessfuly`);
+      msLastSucessful = currentTime();      
+    } catch (error) {
+      console.log(error);
+    }
+    return true;
   }
+  
 
   function fetchNews() {
     lastInvocationTime = Date.now();
@@ -258,7 +275,7 @@ function currentTime (){
       .then((newsResponses) => {        
         newsApiResponse = newsResponses;
         cache.set('news', newsApiResponse); // Update the cache with the new data        
-        console.log(`${currentTime()} News fetching is complete.`);
+        console.log(`[${currentTime()}] News fetching from NewsApi was sucessful.`);
         lastSuccessful = currentTime();
         return newsResponses;
       })
@@ -268,7 +285,7 @@ function currentTime (){
   }
     
   app.get("/topheadlines", (request, response) => {    
-    console.log(`${currentTime()} /topheadlines`);
+    console.log(`${currentTime()} topheadlines`);
   
     let cachedNews = cache.get('news');
     if (cachedNews) {
@@ -279,7 +296,7 @@ function currentTime (){
       //if there is not cached news is because something went wwrong while
       //calling fetchNews, so I will retunr an error page 
       //indicating to try again later.
-      console.log( new Date().toLocaleDateString());
+      console.log(`${currentTime()} cachedNews: ${cachedNews}` );
       response.render("error_page", {remainingTime:remainingTime});    
     }
   });
@@ -288,13 +305,20 @@ app.listen(process.env.PORT || 4000, () => {
   console.log(`app listening on port 4000`);
 
   // Fetch news on server startup
-  try{
-    console.log('starting app...')
-    fetchNews();    
-    console.log(`${currentTime()} ${remainingTime ()}` );
+  try{    
+    fetchNews();     
+    console.log(`${currentTime()} NewsApi: ${remainingTime ()}` );
     }catch (err){
       console.log (`${currentTime()} error while calling NEWSAPI: ${err}`);
   }
-  setInterval(fetchNews, FETCH_INTERVAL);
 
+  try{
+    fetchFromMediaStack(); 
+    console.log(`${currentTime()} Mediastack: ${remainingTime ()}` );
+    }catch (err){
+      console.log (`${currentTime()} error while calling Mediastack: ${err}`);
+  }
+
+  setInterval(fetchNews, FETCH_INTERVAL);
+  setInterval(fetchFromMediaStack, FETCH_INTERVAL);
 });
