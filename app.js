@@ -198,7 +198,8 @@ app.post("/subscribe", (request, response) => {
   app.get("/mediastack", (request, response)=>{
     //const mediastack_response =  mediastack.response;
     //let j = JSON.parse(mediastack_response);  
-    if (mediaStackResponse){
+    try {
+      if (mediaStackResponse){
       mediaStackResponse.data.forEach ( (item) =>{
         //console.log(replaceLinkWithText(item.description));
         item.description = replaceLinkWithText (item.description);
@@ -207,6 +208,12 @@ app.post("/subscribe", (request, response) => {
     }else{
       response.render("error_page", {remainingTime:remainingTime});
     }
+    }catch (err){
+      console.log (`${currentTime()} Error while rendering mediastack page.`);
+      console.log(err);
+      response.render ("page505");
+    }
+    
 
    
   });
@@ -301,6 +308,10 @@ function currentTime (){
     }
   });
   
+app.get ("/505", (request, response) => {
+  response.render("page505", {remainingTime:remainingTime});    
+})
+
 app.listen(process.env.PORT || 4000, () => {
   console.log(`app listening on port 4000`);
 
