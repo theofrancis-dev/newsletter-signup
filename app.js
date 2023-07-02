@@ -195,7 +195,7 @@ app.post("/subscribe", (request, response) => {
     //TODO: to be implemented
   //https://mediastack.com/documentation
   //
-  app.get("/mediastack", (request, response)=>{
+  app.get("/mediastack", (req, response)=>{
     //const mediastack_response =  mediastack.response;
     //let j = JSON.parse(mediastack_response);  
     //console.log(`${currentTime()} IP ${request.socket.remoteAddress} get topheadlines`);
@@ -294,7 +294,7 @@ function currentTime (){
       });
   }
     
-  app.get("/topheadlines", (request, response) => {    
+  app.get("/topheadlines", (req, response) => {    
     //console.log(`${currentTime()} IP ${request.socket.remoteAddress} get topheadlines`);
     console.log(`${currentTime()} IP ${req.headers['x-forwarded-for'] || req.connection.remoteAddress} get topheadlines`);
 
