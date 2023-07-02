@@ -198,6 +198,7 @@ app.post("/subscribe", (request, response) => {
   app.get("/mediastack", (request, response)=>{
     //const mediastack_response =  mediastack.response;
     //let j = JSON.parse(mediastack_response);  
+    console.log(`${currentTime()} IP ${request.socket.remoteAddress} get topheadlines`);
     try {
       if (mediaStackResponse){
       mediaStackResponse.data.forEach ( (item) =>{
@@ -292,7 +293,7 @@ function currentTime (){
   }
     
   app.get("/topheadlines", (request, response) => {    
-    console.log(`${currentTime()} topheadlines`);
+    console.log(`${currentTime()} IP ${request.socket.remoteAddress} get topheadlines`);
   
     let cachedNews = cache.get('news');
     if (cachedNews) {
